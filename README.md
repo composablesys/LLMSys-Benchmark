@@ -7,52 +7,48 @@ A benchmark Paper of  data science code generation LLM System
 
 **Dataset Structure Example:**
 
+- **Approaches** differ from each other due to different ways to split the code/ divide the task.
+- **Parts** differ from each other due to different part after split.
+
+```
 ├── Paper1
 
-  	├── Approach 1
+		├── Approach 1
 
-  	├── Approach 2
+		├── Approach 2
 
-  	├──Approach 3
+		├──Approach 3
 
-​      		├── Part 1
+      		├── Part 1
 
-​      		├──Part 2
+      		├──Part 2
 
-​           			├── ans
+           			├── ans
 
-​           			├── input
+           			├── input
 
-​           			├── `.cfg`
+           			├── `.cfg`
 
-​           			├── `split.txt`
+           			├── `split.txt`
 
-​       				├── `details.txt`
+       				├── `details.txt`
 
-​           			├── `prompt.txt`
+           			├── `prompt.txt`
 
-​           			├── `code_context.txt`
+           			├── `code_context.txt`
 
-​           			├── `reference_code.txt`
+           			├── `reference_code.txt`
 
-​           			├── `test_code.py`         (compare the output)
+           			├── `test_code.py`         (compare the output)
 
-​           			├──`test_generate_pickle.py` (run the generated code)
+           			├──`test_generate_pickle.py` (run the generated code)
 
 ├── Paper2
 
 ├── Paper3
 
 ├── Paper4
-
- 
-
- 
-
- 
-
-- **Approaches** differ from each other due to different ways to split the code/ divide the task.
--  **Parts** differ from each other due to different part after split.
+```
 
  
 
