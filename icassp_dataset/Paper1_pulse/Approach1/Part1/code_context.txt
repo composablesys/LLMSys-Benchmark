@@ -1,0 +1,3 @@
+[code_context]
+No code context is provided because, in the topmost approach, you are expected to write all the code from scratch on your own.
+

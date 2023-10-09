@@ -1,0 +1,2 @@
+[details]
+Since no split information is provided, no details of the split parts are provided. Because, in the topmost approach, you are expected to write the whole code framework from scratch on your own.

@@ -1,0 +1,17 @@
+[background]
+Paper Background included
+
+[idea]
+High level idea of the whole paper
+
+[details]
+No details are provided because, in the topmost approach, you are expected to write the whole code framework from scratch on your own.
+
+[split]
+No split hints are provided because, in the topmost approach, you are expected to split the task in reasonable a way from scratch on your own.
+
+[code_context]
+No code context is provided because, in the topmost approach, you are expected to write all the code from scratch on your own.
+
+
+# SOLUTION START

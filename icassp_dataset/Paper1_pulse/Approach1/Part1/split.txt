@@ -1,0 +1,2 @@
+[split]
+No split hints are provided because, in the topmost approach, you are expected to split the task in reasonable a way from scratch on your own.
