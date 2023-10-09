@@ -1,0 +1,26 @@
+Write a function `weighted_pu_loss`, which computes the non-negative emprical risk loss function used for training, as described in the `.cfg` document. Keep in mind the `y` contained in the formulae for $\ell$ may differ from the `y` passed into the function. Please try your best to ensure numerical stability in this function. I have included the signature of this function:
+
+```
+import torch
+import torch.nn.functional as F
+import numpy as np
+
+def weighted_pu_loss(y, yhat, mix_stft, prior = 0.5, p = 1):
+    
+    """
+    The weighted loss for learning from positive and unlabelled data (PU learning). 
+    
+    Args:
+        y: A mask indicating whether each time-frequency component is positive (1) or unlabelled (0).
+        yhat: The output of the convolutional neural network before the non-linear activation function.
+        mix_stft: The noisy speech in the short-time Fourier transform domain.
+        prior: The class prior for the positive class.
+        p: The exponent for the weight. p = 1.0 corresponds to weighting by the magnitude spectrogram of the 
+            input noisy speech. p = 0.0 corresponds to no weighting.
+        
+    Returns:
+        The weighted loss.
+    """
+    
+    # TODO
+```
