@@ -19,9 +19,9 @@ A benchmark Paper of  data science code generation LLM System
 
 		├──Approach 3
 
-      		├── Part 1
+      			├── Part 1
 
-      		├──Part 2
+      			├──Part 2
 
            			├── ans
 
