@@ -53,12 +53,11 @@ A benchmark Paper of  data science code generation LLM System
 High Level Approach with minor split information
 
 - **`.cfg`** contains the meta info of the paper, including the background, high-level idea of the whole paper.
-- **`split`** Requires the system to split and finish the high-level task by itself without providing additional tips.
-- **`details`** Blank in this approach case.
-- **`prompt.txt`** is the official prompt we recommend using for querying large language models. Prompt.txt will include information from **`.cfg`** and **`split`** from, and also some comments/ key points extracted from the code.
+- **`split.txt`** Requires the system to split and finish the high-level task by itself without providing additional tips.
+- **`details.txt`** Blank in this approach case.
+- **`prompt.txt`** is the official prompt we recommend using for querying large language models. `Prompt.txt` will include information from **`.cfg`** and **`split`** , **`code_context.txt`**, and also some comments/ key points extracted from the code(**`details.txt`**).
 -   **ans and input** contain the pickles file caching the input and solution objects.
 - **`code_context.txt`** is the executable code context for evaluation.
-- **`reference_code.txt`** is the ground truth solution code.
 - **`test_code.py`** contains the testing code and the ground truth solution code.
 - **`test_generate_pickle.py`** is the script we use the generate the input pickle files in input
 
@@ -70,12 +69,12 @@ Several approaches between them
 
 …
 
-LowLevel Approach with minor split
+Low Level Approach with minor split
 
 - **`.cfg`** contains the meta info of the paper, including the background, high-level idea of the whole paper
-- **`split`** contains the information of all parts of the code and . (Read Data, Data Preprocessing, Reconstruct Dataset Class, Data Cleaning, Models, Training, Loss Function, Evaluation, Metrics )
-- **`details`** contains the comments/ key points extracted from the ground truth solution code.
-- **`prompt.txt`** is the official prompt we recommend using for querying large language models. `Prompt.txt` will include information from **`.cfg`, `details` ,**and **`split`**
+- **`split.txt`** contains the information of all parts of the code and . (Read Data, Data Preprocessing, Reconstruct Dataset Class, Data Cleaning, Models, Training, Loss Function, Evaluation, Metrics )
+- **`details.txt`** contains the comments/ key points extracted from the ground truth solution code.
+- **`prompt.txt`** is the official prompt we recommend using for querying large language models. `Prompt.txt` will include information from **`.cfg`, `details` ,`context.txt`**and **`split`**
 - **ans and input** contain the pickles file caching the input and solution objects.
 - **`code_context.txt`** is the executable code context for evaluation.
 - **`test_code.py`** contains the testing code and the ground truth solution code.
