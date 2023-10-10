@@ -21,25 +21,25 @@ A benchmark Paper of  data science code generation LLM System
 
       			├── Part 1
 
-      			├──Part 2
+      			├── Part 2
 
            			├── ans
 
            			├── input
 
-           			├── `.cfg`
+           			├── .cfg
 
-           			├── `split.txt`
+           			├── split.txt
 
-       				├── `details.txt`
+       				├── details.txt
 
-           			├── `prompt.txt`
+           			├── prompt.txt
 
-           			├── `code_context.txt`
+           			├── code_context.txt
 
-           			├── `test_code.py`         (compare the output)
+           			├── test_code.py         (compare the output)
 
-           			├──`test_generate_pickle.py` (run the generated code)
+           			├──test_generate_pickle.py (run the generated code)
 
 ├── Paper2
 
