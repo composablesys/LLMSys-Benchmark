@@ -1,0 +1,8 @@
+[details]
+Metric. We used the SI-SNR as the evaluation metric for speech enhancement performance. Let $\mathbf{s}$ be the clean speech and $\widehat{\mathbf{s}}$ be an estimate of it, both in the time domain. Note that $\widehat{\mathbf{s}}$ can be decomposed as $\widehat{\mathbf{s}}=\widehat{\mathbf{s}}_{\|}+\widehat{\mathbf{s}}_{\perp}$. Here, $\widehat{\mathbf{s}}_{\|}:=\frac{\mathbf{s}^{T} \widehat{\mathbf{s}}}{\|\mathbf{s}\|^{2}} \mathbf{s}$ is the component parallel to $\mathbf{s}$ and $\widehat{\mathbf{s}}_{\perp}:=\widehat{\mathbf{s}}-\widehat{\mathbf{s}}_{\|}$is that perpendicular to it, where $(\cdot)^{T}$ is transposition and $\|\cdot\|$ is the 2-norm. The SI-SNR is defined using the ratio of the squared norms of these components as follows:
+
+$$
+\operatorname{SI-SNR}(\mathbf{s}, \widehat{\mathbf{s}}):=10 \log _{10} \frac{\left\|\widehat{\mathbf{s}}_{\|}\right\|^{2}}{\left\|\widehat{\mathbf{s}}_{\perp}\right\|^{2}}=10 \log _{10} \frac{\|a \mathbf{s}\|^{2}}{\|\widehat{\mathbf{s}}-a \mathbf{s}\|^{2}}
+$$
+
+with $a:=\frac{\mathbf{s}^{T} \widehat{\mathbf{s}}}{\|\mathbf{s}\|^{2}}$. It is convenient to define an SI-SNR improvement (SI-SNRi) as the difference of SI-SNR $(\mathbf{s}, \widehat{\mathbf{s}})$ with $\widehat{\mathbf{s}}$ being the enhanced speech and $\operatorname{SI-SNR}(\mathbf{s}, \widehat{\mathbf{s}})$ with $\widehat{\mathbf{s}}$ being the observed noisy speech. Not only did we use the test SI-SNRi for performance evaluation, we also tuned the hyperparameters based on the validation SI-SNRi. A model checkpoint was saved at the end of each epoch and the one with the highest validation SI-SNRi was selected for evaluation on the test set.

@@ -22,10 +22,30 @@ def calc_si_sdri(true, est, mix):
 
 
 
-def test():
+# Test cases
+def test_si_sdr_equality():
+    for _ in range(5):
+        # Generate random input data for testing
+        true = torch.rand(10)  # Replace '10' with the appropriate dimension
+        est = torch.rand(10)   # Replace '10' with the appropriate dimension
+        mix = torch.rand(10)   # Replace '10' with the appropriate dimension
+
+        # Calculate the output of 'calc_si_sdri'
+        si_sdri_output = calc_si_sdri(true, est, mix)
+
+        # Calculate the output of the unknown function 'generated'
+        generated_output = calc_si_sdri_generated(true, est, mix)
+
+        # Compare the two outputs for equality
+        if not torch.allclose(si_sdri_output, generated_output):
+            return False
+
     return True
 
 
 
+
 if __name__ == "__main__":
-    print(test())
+    # Run the test and print the result
+    result = test_si_sdr_equality()
+    print(result)
