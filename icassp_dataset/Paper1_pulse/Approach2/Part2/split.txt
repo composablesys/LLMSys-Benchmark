@@ -1,0 +1,3 @@
+[split]
+The PULSE algorithm code implementation should include following parts: dataset preprocessing, the PULSE model, loss function, metrics to evaluation the output of the model, and the main function which drive the training loop.
+In this step, you are only required to generate the pytorch model that is used for the neural network. 

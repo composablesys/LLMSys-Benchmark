@@ -1,0 +1,134 @@
+[background]
+The motivation is to address the problem of training speech enhancement (SE) models using non-parallel data. Specifically, it aims to develop a method for enhancing audio signals, such as speech, in scenarios where it is challenging to obtain clean, parallel data for training. The main challenge is to train audio enhancement models when only noisy data and no clean reference data are available, which is a common scenario in many real-world applications.
+
+
+[idea]
+By applying PULSE algorithm, we can address the problem of training speech enhancement (SE) models using non-parallel data. Here I provide you some high-level ideas of Pulse algorithm.
+
+PU Learning Framework: PULSE is based on PU learning, which stands for Positive-Unlabeled learning. In the context of speech enhancement, "Positive" refers to noisy speech samples, and "Unlabeled" refers to data that may contain either clean or noisy samples but without labels. PULSE leverages this framework to train speech enhancement models effectively.
+Training Data: PULSE uses three types of data for training: Positive Data (P): This corresponds to the noisy speech data, which is readily available. Unlabeled Data (U): This includes data that can contain either clean or noisy samples but lacks labels. Unlabeled data is relatively easy to collect since it doesn't require precise labeling. Optional Negative Data (N): If available, negative data corresponds to clean speech samples. While it's not always necessary, having negative data can be beneficial for training.
+Loss Function: PULSE introduces a novel weighted loss function designed to maximize the separation between the positive (noisy) and unlabeled (potentially clean or noisy) data. This loss function is formulated to ensure that the model learns to enhance the positive data while suppressing the noise and potential clean signals in the unlabeled data.
+Empirical Risk Minimization: The algorithm employs empirical risk minimization to optimize the model. This approach aims to minimize the loss function by adjusting the model's parameters during training.
+Pipeline of PULSE:
+Masking-based SE. In this paper, we employ a masking-based approach to SE, where we use a DNN to estimate a mask in the short-time Fourier transform (STFT) domain (Fig. 2). In this approach, an input noisy signal clip in the time domain is first transformed into the TF domain by the STFT. Let the resulting STFT-domain representation (i.e., the complex spectrogram) be $\widetilde{x}_{j} \in \mathbb{C}$, where $j$ is the TF component index. Then, we compute a magnitude spectrogram $\left|\widetilde{x}_{j}\right|$ by taking the absolute value. A DNN is given the magnitude spectrogram and estimates a mask $\mu_{j}$. An enhanced signal is obtained by elementwise multiplication (i.e., masking) $\mu_{j} \widetilde{x}_{j}$, which suppresses TF components dominated by noise. Finally, the enhanced signal is transformed back into the time domain by the inverse STFT.
+
+Motivation. In this approach, it is crucial to train the DNN so that the mask can be estimated properly. If we were given parallel training data consisting of both noisy signals and the corresponding clean signals, we could do so by supervised learning in a straightforward way. However, as we already mentioned in Sec. 11 such a training methodology has fundamental issues, which motivated us to develop PULSE.
+
+Pipeline of PULSE: The training data consist of noisy signal clips and noise clips. We first compute a magnitude spectrogram of each clip by applying the STFT and then taking the absolute value. Then, we crop a rectangular spectrogram patch centred at each TF point as the input feature. Let us define a TF component as $\mathrm{P}$ and $\mathrm{N}$ if the signal is inactive and active in the corresponding spectrogram patch, respectively. Each TF component of a noise clip is P. On the other hand, each TF component of a noisy signal clip can be either $\mathrm{P}$ or $\mathrm{N}$ and is thus treated as $\mathrm{U}$. Thus, $\mathcal{X}^{\mathrm{P}}$ and $\mathcal{X}^{\mathrm{U}}$ consist of the spectrogram patches of noise clips and those of noisy signal clips, respectively. These $\mathrm{P}$ and $\mathrm{U}$ data are used to train a CNN to classify each TF component as $\mathrm{P}$ or $\mathrm{N}$ by PU learning described in Sec. 3. During testing, the mask $\mu_{j}$ is obtained by
+
+$$
+\mu_{j} \leftarrow \begin{cases}1 & \left(\widehat{y}_{j}=-1\right) \\ 0 & \left(\widehat{y}_{j}=+1\right)\end{cases}
+$$
+
+Here, $\widehat{y}_{j}:=\operatorname{sgn}\left(f_{\widehat{\boldsymbol{\theta}}}\left(\mathbf{x}_{j}\right)\right)$ is the predicted label of the $j$ th TF component, where $\mathbf{x}_{j}$ is the corresponding spectrogram patch and $\widehat{\boldsymbol{\theta}}$ is the trained parameters. This mask retains the TF components classified as $\mathrm{N}$ and removes those classified as $\mathrm{P}$.
+
+Architecture. The classifier $f_{\boldsymbol{\theta}}$ is modelled by the following 11-layer CNN: Compress(1/15)-Conv2d(1, 8, 3)-Conv2d(8, 8, 3)Conv2d(8, 16, 3)-Conv2d(16, 16, 3)-Conv2d(16, 32, 3)-Conv2d(32, 32, 3)-Conv2d(32, 64, 3)-Conv2d(64, 64, 3)-Conv2d(64, 128, 1)Conv2d(128, 128, 1)-Conv2d(128, 1, 1). Here, Compress $(\alpha)$ is a power-law compression layer that applies the non-linear function $(\cdot)^{\alpha}$ elementwise. Conv2d $\left(C_{\text {in }}, C_{\text {out }}, K\right)$ is a two-dimensional convolutional layer with $C_{\text {in }}$ input channels, $C_{\text {out }}$ output channels, a kernel size of $K \times K$, a stride of $(1,1)$, and no padding. All but the last convolutional layer are followed by a rectified linear unit (ReLU) and then a dropout layer with a dropout rate of 0.2. The size of the input spectrogram patch is set to that of the receptive field of the network (i.e., $17 \times 17$ ) so that the $\mathrm{CNN}$ output size is $1 \times 1$.
+
+Loss. It is crucial to design the loss $\ell(\mathbf{x}, y, \boldsymbol{\theta})$ properly to obtain a good SE performance by PULSE. It measures the deviation of the classifier $f_{\boldsymbol{\theta}}$ from $(\mathbf{x}, y)$, where $\mathbf{x}$ is a spectrogram patch and $y$ is the corresponding label. Commonly used losses in PU learning, such as the sigmoid loss (2) or the cross-entropy, assign uniform weights to all TF components. As the classification accuracy of the TF component with a larger magnitude is more significant in SE, we introduce the magnitude spectrogram $w(\mathbf{x}):=|\widetilde{x}|$ as a weight in (2). Specifically, our loss is given by
+
+$$
+\ell(\mathbf{x}, y, \boldsymbol{\theta})=w(\mathbf{x}) \sigma\left(-y f_{\boldsymbol{\theta}}(\mathbf{x})\right),
+$$
+
+which we call a weighted sigmoid loss.
+
+The PU empirical loss function that is used as the loss during training uses the weighted sigmoid loss and is specified by this formula:
+
+\begin{align*} & {{\hat R}_{{\text{nnPU}}}}({\mathbf{\theta }}): = \frac{\pi }{{\left| {{\mathcal{X}^{\text{P}}}} \right|}}\sum\limits_{{\mathbf{x}} \in {\mathcal{X}^{\text{P}}}} \ell ({\mathbf{x}}, + 1,{\mathbf{\theta }}) + \left( {\frac{1}{{\left| {{\mathcal{X}^{\text{U}}}} \right|}}\sum\limits_{{\mathbf{x}} \in {\mathcal{X}^{\text{U}}}} \ell ({\mathbf{x}}, - 1,{\mathbf{\theta }})} \right. \\ & {\left. { - \frac{\pi }{{\left| {{\mathcal{X}^{\text{P}}}} \right|}}\sum\limits_{{\mathbf{x}} \in {\mathcal{X}^{\text{P}}}} \ell ({\mathbf{x}}, - 1,{\mathbf{\theta }})} \right)_ + }, \tag{8}\end{align*}
+
+[split]
+The PULSE algorithm code implementation should include following parts: dataset preprocessing, the PULSE model, loss function, metrics to evaluation the output of the model, and the main function which drive the training loop.
+In this step, everything except for the training loop is completed. Your job is just to complete the training loop.
+
+[details]
+You need to complete the `train` function, which trains and improve the model by changing its parameters. To do this, first loop through the data in the training set, then for each sample point compute the loss and compute the backward gradient to update the model. Then, loop through the validation dataset, run the model on the input data to obtain the mask, enhance the audio and compute the signal to noise ratio. Return the maximum validation SI-SNRi.
+
+[code_cntext]
+import torch
+
+def weighted_pu_loss(y, yhat, mix_stft, prior = 0.5, p = 1):
+    
+    """
+    The weighted loss for learning from positive and unlabelled data (PU learning). 
+    
+    Args:
+        y: A mask indicating whether each time-frequency component is positive (1) or unlabelled (0).
+        yhat: The output of the convolutional neural network before the non-linear activation function.
+        mix_stft: The noisy speech in the short-time Fourier transform domain.
+        prior: The class prior for the positive class.
+        p: The exponent for the weight. p = 1.0 corresponds to weighting by the magnitude spectrogram of the 
+            input noisy speech. p = 0.0 corresponds to no weighting.
+        
+    Returns:
+        The weighted loss.
+    """
+    pass
+
+@torch.no_grad()
+def enhance(mixture_stft, estmask, length, frame_len):
+    
+    """
+    Masking-based speech enhancement.
+    
+    Args:
+        mixture_stft: The observed noisy speech in the short-time Fourier transform domain.
+        estmask: The estimated mask to be used for masking-based speech enhancement.
+        length: The waveform length of the enhanced speech.
+        frame_len: The frame length for the short-time Fourier transform.
+        
+    Returns:
+        estwav: The enhanced speech in the time domain.
+        est_stft: The enhanced speech in the short-time Fourier transform domain.
+    """
+    pass
+
+@torch.no_grad()
+def calc_si_sdri(true, est, mix):
+    pass
+
+class PU_train_data(torch.utils.data.Dataset):
+        
+    """
+    A dataset class for the training set for PULSE, where each example is either noisy speech or 
+    noise. The examples with even indices are noisy speech examples, which are considered to be 
+    unlabelled data. The examples with odd indices are noise examples, which are considered to be 
+    positive examples.
+
+    Args:
+        frame_len: The frame length for the short-time Fourier transform.
+        wav_len: The waveform length of each audio clip.
+        fname: The path to the configuration file for the training set.
+        clean_path: The directory path of the clean speech dataset. (not used)
+        noise_path: The directory path of the noise dataset. (not used)
+
+    Returns:
+        feat: The power-law compressed magnitude spectrogram of mixture_stft. (NB: This is unnecessary 
+            as it can be computed from mixture_stft and is to be removed in future updates.)
+        mask: A binary mask indicating whether each time-frequency component is a positive example (1)
+            or an unlabelled example (0). For the even indices, this is a matrix of all zeros. For the 
+            odd indices, this is a matrix of all ones. 
+        mixture_stft: Noisy speech or noise in the short-time Fourier transform domain.
+        mixture_stft: This is a dummy variable and not used. (This is used just to make sure that 
+            there are four outputs for the sake of consistency with other dataset classes.)
+    """
+
+def train(model, epoch, train_loader : PU_train_data, val_loader, prior = 0.7, frame_len = 1024, p = 1):
+
+    """
+    Train a speech enhancement model. The model checkpoint with the maximum validation SI-SNRi is stored 
+    in 'model_*.pth'. 
+    Args:
+        model: The speech enhancement model to be trained.
+        epochs: The number of epochs.
+        train_loader: The data loader for the training set.
+        val_loader: The data loader for the validation set.
+        prior: The class prior for the positive class.
+        frame_len: The frame length for the short-time Fourier transform.
+        p: The exponent in the weight for the weighted sigmoid loss, which equals 1.0 for weighting
+            by the magnitude spectrogram and 0.0 for no weighting.
+        
+    Returns:
+        max_si_sdri: The maximum validation SI-SNRi.
+    """
+    
+    

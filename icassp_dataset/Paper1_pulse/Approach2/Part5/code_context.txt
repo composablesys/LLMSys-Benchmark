@@ -1,0 +1,89 @@
+[code_cntext]
+import torch
+
+def weighted_pu_loss(y, yhat, mix_stft, prior = 0.5, p = 1):
+    
+    """
+    The weighted loss for learning from positive and unlabelled data (PU learning). 
+    
+    Args:
+        y: A mask indicating whether each time-frequency component is positive (1) or unlabelled (0).
+        yhat: The output of the convolutional neural network before the non-linear activation function.
+        mix_stft: The noisy speech in the short-time Fourier transform domain.
+        prior: The class prior for the positive class.
+        p: The exponent for the weight. p = 1.0 corresponds to weighting by the magnitude spectrogram of the 
+            input noisy speech. p = 0.0 corresponds to no weighting.
+        
+    Returns:
+        The weighted loss.
+    """
+    pass
+
+@torch.no_grad()
+def enhance(mixture_stft, estmask, length, frame_len):
+    
+    """
+    Masking-based speech enhancement.
+    
+    Args:
+        mixture_stft: The observed noisy speech in the short-time Fourier transform domain.
+        estmask: The estimated mask to be used for masking-based speech enhancement.
+        length: The waveform length of the enhanced speech.
+        frame_len: The frame length for the short-time Fourier transform.
+        
+    Returns:
+        estwav: The enhanced speech in the time domain.
+        est_stft: The enhanced speech in the short-time Fourier transform domain.
+    """
+    pass
+
+@torch.no_grad()
+def calc_si_sdri(true, est, mix):
+    pass
+
+class PU_train_data(torch.utils.data.Dataset):
+        
+    """
+    A dataset class for the training set for PULSE, where each example is either noisy speech or 
+    noise. The examples with even indices are noisy speech examples, which are considered to be 
+    unlabelled data. The examples with odd indices are noise examples, which are considered to be 
+    positive examples.
+
+    Args:
+        frame_len: The frame length for the short-time Fourier transform.
+        wav_len: The waveform length of each audio clip.
+        fname: The path to the configuration file for the training set.
+        clean_path: The directory path of the clean speech dataset. (not used)
+        noise_path: The directory path of the noise dataset. (not used)
+
+    Returns:
+        feat: The power-law compressed magnitude spectrogram of mixture_stft. (NB: This is unnecessary 
+            as it can be computed from mixture_stft and is to be removed in future updates.)
+        mask: A binary mask indicating whether each time-frequency component is a positive example (1)
+            or an unlabelled example (0). For the even indices, this is a matrix of all zeros. For the 
+            odd indices, this is a matrix of all ones. 
+        mixture_stft: Noisy speech or noise in the short-time Fourier transform domain.
+        mixture_stft: This is a dummy variable and not used. (This is used just to make sure that 
+            there are four outputs for the sake of consistency with other dataset classes.)
+    """
+
+def train(model, epoch, train_loader : PU_train_data, val_loader, prior = 0.7, frame_len = 1024, p = 1):
+
+    """
+    Train a speech enhancement model. The model checkpoint with the maximum validation SI-SNRi is stored 
+    in 'model_*.pth'. 
+    Args:
+        model: The speech enhancement model to be trained.
+        epochs: The number of epochs.
+        train_loader: The data loader for the training set.
+        val_loader: The data loader for the validation set.
+        prior: The class prior for the positive class.
+        frame_len: The frame length for the short-time Fourier transform.
+        p: The exponent in the weight for the weighted sigmoid loss, which equals 1.0 for weighting
+            by the magnitude spectrogram and 0.0 for no weighting.
+        
+    Returns:
+        max_si_sdri: The maximum validation SI-SNRi.
+    """
+    
+    

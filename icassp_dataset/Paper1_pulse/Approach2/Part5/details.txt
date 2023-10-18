@@ -1,0 +1,2 @@
+[details]
+You need to complete the `train` function, which trains and improve the model by changing its parameters. To do this, first loop through the data in the training set, then for each sample point compute the loss and compute the backward gradient to update the model. Then, loop through the validation dataset, run the model on the input data to obtain the mask, enhance the audio and compute the signal to noise ratio. Return the maximum validation SI-SNRi.
