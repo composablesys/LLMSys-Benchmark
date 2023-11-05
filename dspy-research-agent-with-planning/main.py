@@ -1,7 +1,6 @@
 import sys
 import os
 
-from attr import dataclass
 from typing import Callable
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__))+"/dspy")
@@ -11,7 +10,6 @@ import dsp
 gpt4 = dspy.OpenAI(model='gpt-4')
 dspy.settings.configure(lm=gpt4)
 
-@dataclass(frozen=True)
 class ActionInfo:
     name: str
     description: str
@@ -250,33 +248,64 @@ class ResearchReAct(dspy.Module):
             signature_dict[output] =  dspy.OutputField(prefix=f"{output}:", desc=output_desc)
         return signature_dict
     
-    def act(self, output, hop):
+    def act(self, output):
         try:
-            action = output[f"Action_{hop+1}"]
-            action_name, action_val = action.strip().split('\n')[0].split('[', 1)
-            action_val = action_val.rsplit(']', 1)[0]
+            action = output[f"Action"]
+            action_input = output[f"Action Input"]
 
-            if action_name == 'Finish': return action_val
+            if action == 'Final Answer': return "Done"
 
-            output[f"Observation_{hop+1}"] = self.tools[action_name](action_val).passages
+            output[f"Observation"] = self.tools[action](action_input)
 
         except Exception as e:
-            output[f"Observation_{hop+1}"] = "Failed to parse action. Bad formatting or incorrect action name."
+            output[f"Observation"] = "Failed to parse action. Bad formatting or incorrect action name."
         
 
     def forward(self, **kwargs):
         args = {key: kwargs[key] for key in self.input_fields.keys() if key in kwargs}
 
         for hop in range(self.max_iters):
-            # with dspy.settings.context(show_guidelines=(i <= 2)):
             output = self.react[hop](**args)
             
-            if action_val := self.act(output, hop): break
+            action_val = self.act(output)
+            if action_val == "Done":
+                break
             args.update(output)
 
         return dspy.Prediction() 
+# [Reasoning]: Summarize the reasoning behind the action
+# [Action]: Summarize all relevant details of the action objectively
+# [Observation]: Summarize all relevant details in the observation objectively
+#         
+
+class SummerizationTask(dspy.Signature):
+    '''
+    Summarize your actions and observations. Do not include any result that is guessed rather than directly confirmed by the observation. Do not include additional information or suggestions.
+    '''
+    reflection = dspy.InputField(desc = format_prompt_dict['Reflection'])
+    research_plan_and_status = dspy.InputField(desc = format_prompt_dict["Research Plan and Status"])
+    fact_check = dspy.InputField(desc=format_prompt_dict["Fact Check"])
+    thought = dspy.InputField(desc=format_prompt_dict["Thought"])
+    action = dspy.InputField(desc=format_prompt_dict["Action"])
+    action_input = dspy.InputField(desc=format_prompt_dict["Action Input"])
+    action_ouput = dspy.InputField(desc= "The output of the action input")
+    reasoning_summary = dspy.OutputField(desc="Summarize all relevant details of the action objectively")
+    action_summary = dspy.OutputField(desc= "Summarize all relevant details of the action objectively")
+    observation_summary = dspy.OutputField(desc="Summarize all relevant details in the action ouput objectively")
+
+def summary_format(summaries):
+    return f"\n{''.join([f'summary{i}: {summaries[i]}\n\n' for i in range(len(summaries))])}" 
 
 
+class SummarizeResearchLog(dspy.Signature):
+    '''
+    Concisely summarize and list all relevant information from the research log that will be helpful for future step in this format:
+    '''
+    summaries = dspy.InputField(desc = "list of summaries", format=summary_format)
+    output = dspy.OutputField(desc="output")
+
+generate_answer = dspy.Predict(SummarizeResearchLog)
+generate_answer(summaries = ["code1", "code2", "code3"])
 
 class ResearchTask(dspy.Signature):
     """Perform research based on the given Research Problem. You do not know anything about this problem so far. 
@@ -291,8 +320,5 @@ Follow these instructions and do not forget them:
 - Do not try installing any new packages or libraries.
 - If you believe you have solved the problem, you can use the Final Answer action to submit your answer. You can only submit once, so double check that you have achieved the goal before submitting.  """
     research_problem= dspy.InputField(desc="Contains the research problem and constraints")
-    output = dspy.OutputField(desc="output")
-# dspy.Predict( ResearchTask) (research_problem = "Go through the data_description.txt file to understand the data and all the features. You can summarize it in your research logs to keep track of what all you have to do. Then fill in the provided train.py script to train a model and iterate over different models or feature selections to get a better performance. Never try to read any csv files directly. Do not forget to execute the changes you made to check for performance. ")
-
-agent = ResearchReAct(ResearchTask, tools= ACTIONS)
-agent(research_problem = "Go through the data_description.txt file to understand the data and all the features. You can summarize it in your research logs to keep track of what all you have to do. Then fill in the provided train.py script to train a model and iterate over different models or feature selections to get a better performance. Never try to read any csv files directly. Do not forget to execute the changes you made to check for performance. ")
+# agent = ResearchReAct(ResearchTask, tools= ACTIONS)
+# agent(research_problem = "Go through the data_description.txt file to understand the data and all the features. You can summarize it in your research logs to keep track of what all you have to do. Then fill in the provided train.py script to train a model and iterate over different models or feature selections to get a better performance. Never try to read any csv files directly. Do not forget to execute the changes you made to check for performance. ")
